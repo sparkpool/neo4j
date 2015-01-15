@@ -301,11 +301,10 @@ public class LuceneDataSource extends LogBackedXaDataSource
     }
 
     @Override
-    public void stop()
+    public void stop() throws IOException
     {
         synchronized ( this )
         {
-            super.stop();
             if ( closed )
             {
                 return;
@@ -313,14 +312,7 @@ public class LuceneDataSource extends LogBackedXaDataSource
             closed = true;
             for ( IndexReference searcher : indexSearchers.values() )
             {
-                try
-                {
-                    searcher.dispose( true );
-                }
-                catch ( IOException e )
-                {
-                    e.printStackTrace();
-                }
+                searcher.dispose( true );
             }
             indexSearchers.clear();
         }
@@ -328,6 +320,7 @@ public class LuceneDataSource extends LogBackedXaDataSource
         if ( xaContainer != null )
         {
             xaContainer.close();
+            unbindLogicalLog();
         }
         providerStore.close();
     }

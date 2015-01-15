@@ -728,6 +728,7 @@ public class XaLogicalLog implements LogLoader
                     "time it is opened." );
             return;
         }
+        xaTf.flushAll();
         releaseCurrentLogFile();
         char logWas = currentLog;
         if ( currentLog != CLEAN ) // again special case, see above
@@ -735,7 +736,6 @@ public class XaLogicalLog implements LogLoader
             setActiveLog( CLEAN );
         }
 
-        xaTf.flushAll();
         File activeLogFileName = new File( fileName.getPath() + "." + logWas);
         renameLogFileToRightVersion( activeLogFileName, endPosition );
         xaTf.getAndSetNewVersion();
