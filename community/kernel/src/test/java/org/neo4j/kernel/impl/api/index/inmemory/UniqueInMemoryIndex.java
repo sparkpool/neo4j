@@ -72,6 +72,11 @@ class UniqueInMemoryIndex extends InMemoryIndex
             }
 
             @Override
+            public void validate( Iterable<NodePropertyUpdate> updates ) throws IOException
+            {
+            }
+
+            @Override
             public void remove( Iterable<Long> nodeIds )
             {
                 for ( long nodeId : nodeIds )

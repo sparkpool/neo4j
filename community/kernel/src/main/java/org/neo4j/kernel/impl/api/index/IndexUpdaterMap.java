@@ -116,6 +116,11 @@ public class IndexUpdaterMap implements AutoCloseable, Iterable<IndexUpdater>
         return updaterMap.size();
     }
 
+    public int numberOfIndexes()
+    {
+        return indexMap.size();
+    }
+
     @Override
     public Iterator<IndexUpdater> iterator()
     {

@@ -45,7 +45,7 @@ public class WriterLogicTest
     public void forceShouldSetOnlineStatus() throws Exception
     {
         // GIVEN
-        IndexWriter writer = newWriter();
+        LuceneIndexWriter writer = newWriter();
         writer.addDocument( newDocument() );
         logic.commitAsOnline( writer );
         
@@ -60,7 +60,7 @@ public class WriterLogicTest
     public void forceShouldKeepOnlineStatus() throws Exception
     {
         // GIVEN
-        IndexWriter writer = newWriter();
+        LuceneIndexWriter writer = newWriter();
         logic.commitAsOnline( writer );
         
         // WHEN
@@ -76,7 +76,7 @@ public class WriterLogicTest
     public void otherWriterSessionShouldKeepOnlineStatusEvenIfNotForcingBeforeClosing() throws Exception
     {
         // GIVEN
-        IndexWriter writer = newWriter();
+        LuceneIndexWriter writer = newWriter();
         logic.commitAsOnline( writer );
         writer.close( true );
         
@@ -106,9 +106,9 @@ public class WriterLogicTest
         dirFactory.close();
     }
     
-    private IndexWriter newWriter() throws IOException
+    private LuceneIndexWriter newWriter() throws IOException
     {
-        return new IndexWriter( directory, new IndexWriterConfig( Version.LUCENE_35, KEYWORD_ANALYZER ) );
+        return new SimpleLuceneIndexWriter( directory, new IndexWriterConfig( Version.LUCENE_35, KEYWORD_ANALYZER ) );
     }
     
     private Document newDocument()

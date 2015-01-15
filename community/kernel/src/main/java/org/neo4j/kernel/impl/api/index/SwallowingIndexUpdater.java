@@ -34,6 +34,12 @@ public final class SwallowingIndexUpdater implements IndexUpdater
     }
 
     @Override
+    public void validate( Iterable<NodePropertyUpdate> updates ) throws IOException
+    {
+        // nothing to validate
+    }
+
+    @Override
     public void process( NodePropertyUpdate update )
     {
         // intentionally swallow this update

@@ -19,12 +19,11 @@
  */
 package org.neo4j.kernel.api.impl.index;
 
-import java.io.IOException;
-
-import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
+
+import java.io.IOException;
 
 public interface LuceneIndexWriterFactory
 {
-    IndexWriter create( Directory directory ) throws IOException;
+    LuceneIndexWriter create( Directory directory ) throws IOException;
 }

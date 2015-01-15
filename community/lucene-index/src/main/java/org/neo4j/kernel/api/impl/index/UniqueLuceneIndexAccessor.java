@@ -101,6 +101,12 @@ class UniqueLuceneIndexAccessor extends LuceneIndexAccessor
         }
 
         @Override
+        public void validate( Iterable<NodePropertyUpdate> updates ) throws IOException
+        {
+            delegate.validate( updates );
+        }
+
+        @Override
         public void remove( Iterable<Long> nodeIds ) throws IOException
         {
             delegate.remove( nodeIds );

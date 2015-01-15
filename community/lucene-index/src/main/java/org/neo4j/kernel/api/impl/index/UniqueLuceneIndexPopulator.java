@@ -67,7 +67,7 @@ class UniqueLuceneIndexPopulator extends LuceneIndexPopulator
     public void create() throws IOException
     {
         super.create();
-        searcherManager = new SearcherManager( writer, true, new SearcherFactory() );
+        searcherManager = writer.createSearcherManager();
     }
 
     @Override
@@ -132,6 +132,11 @@ class UniqueLuceneIndexPopulator extends LuceneIndexPopulator
     {
         return new IndexUpdater()
         {
+            @Override
+            public void validate( Iterable<NodePropertyUpdate> updates ) throws IOException
+            {
+            }
+
             @Override
             public void process( NodePropertyUpdate update ) throws IOException, IndexEntryConflictException
             {

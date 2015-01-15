@@ -19,6 +19,7 @@
  */
 package org.neo4j.kernel.api.impl.index;
 
+import static org.neo4j.kernel.api.impl.index.IndexWriterFactories.overflowAware;
 import static org.neo4j.kernel.api.impl.index.IndexWriterFactories.standard;
 
 import java.io.EOFException;
@@ -65,15 +66,14 @@ public class LuceneSchemaIndexProvider extends SchemaIndexProvider
         if ( config.isUnique() )
         {
             return new DeferredConstraintVerificationUniqueLuceneIndexPopulator(
-                    documentStructure, standard(), writerStatus,
-                    directoryFactory, folderLayout.getFolder( indexId ), failureStorage,
-                    indexId, descriptor );
+                    documentStructure, overflowAware(), writerStatus, directoryFactory,
+                    folderLayout.getFolder( indexId ), failureStorage, indexId, descriptor );
         }
         else
         {
             return new NonUniqueLuceneIndexPopulator(
-                    NonUniqueLuceneIndexPopulator.DEFAULT_QUEUE_THRESHOLD, documentStructure, standard(), writerStatus,
-                    directoryFactory, folderLayout.getFolder( indexId ), failureStorage, indexId );
+                    NonUniqueLuceneIndexPopulator.DEFAULT_QUEUE_THRESHOLD, documentStructure, overflowAware(),
+                    writerStatus, directoryFactory, folderLayout.getFolder( indexId ), failureStorage, indexId );
         }
     }
 

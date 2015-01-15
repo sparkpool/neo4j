@@ -58,7 +58,7 @@ public class LuceneLabelScanStore
     private final Monitor monitor;
     private Directory directory;
     private SearcherManager searcherManager;
-    private IndexWriter writer;
+    private LuceneIndexWriter writer;
     private boolean needsRebuild;
     private final File directoryLocation;
     private final FileSystemAbstraction fs;
@@ -270,7 +270,7 @@ public class LuceneLabelScanStore
                     "To trigger a rebuild, ensure the database is stopped, delete the files in '" +
                     directoryLocation.getAbsolutePath() + "', and then start the database again." );
         }
-        searcherManager = new SearcherManager( writer, true, new SearcherFactory() );
+        searcherManager = writer.createSearcherManager();
     }
 
     @Override

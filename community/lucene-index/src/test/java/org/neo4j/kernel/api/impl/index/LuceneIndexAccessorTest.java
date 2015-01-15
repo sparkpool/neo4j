@@ -23,9 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.lucene.store.Directory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
+
 import org.neo4j.kernel.api.index.IndexEntryConflictException;
 import org.neo4j.kernel.api.index.IndexReader;
 import org.neo4j.kernel.api.index.IndexUpdater;
@@ -34,6 +37,11 @@ import org.neo4j.kernel.impl.api.index.IndexUpdateMode;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static org.neo4j.helpers.collection.IteratorUtil.asSet;
 import static org.neo4j.helpers.collection.IteratorUtil.asUniqueSet;
 import static org.neo4j.helpers.collection.IteratorUtil.emptySetOf;
@@ -118,6 +126,45 @@ public class LuceneIndexAccessorTest
         // THEN
         assertEquals( asSet( nodeId2 ), asUniqueSet( reader.lookup( value ) ) );
         reader.close();
+    }
+
+    @Test
+    public void updaterShouldReserveDocuments() throws IOException
+    {
+        // Given
+        LuceneIndexWriter indexWriter = mock( LuceneIndexWriter.class );
+        LuceneIndexWriterFactory indexWriterFactory = mock( LuceneIndexWriterFactory.class );
+        when( indexWriterFactory.create( any( Directory.class ) ) ).thenReturn( indexWriter );
+
+        NonUniqueLuceneIndexAccessor indexAccessor =
+                new NonUniqueLuceneIndexAccessor( documentLogic, indexWriterFactory, writerLogic, dirFactory, dir );
+
+        IndexUpdater updater = indexAccessor.newUpdater( IndexUpdateMode.ONLINE );
+
+        // When
+        updater.validate( asList(
+                NodePropertyUpdate.add( 1, 1, null, null ),
+                NodePropertyUpdate.add( 2, 2, null, null ),
+                NodePropertyUpdate.add( 3, 3, null, null ) ) );
+
+        updater.validate( asList(
+                NodePropertyUpdate.change( 0, 0, null, null, null, null ),
+                NodePropertyUpdate.add( 1, 1, null, null ),
+                NodePropertyUpdate.add( 2, 2, null, null ),
+                NodePropertyUpdate.remove( 3, 3, null, null ) ) );
+
+        updater.validate( asList(
+                NodePropertyUpdate.change( 0, 0, null, null, null, null ),
+                NodePropertyUpdate.change( 1, 1, null, null, null, null ),
+                NodePropertyUpdate.remove( 2, 2, null, null ),
+                NodePropertyUpdate.remove( 3, 3, null, null ) ) );
+
+        // Then
+        InOrder order = inOrder( indexWriter );
+        order.verify( indexWriter ).createSearcherManager();
+        order.verify( indexWriter ).reserveDocumentAdditions( 3 );
+        order.verify( indexWriter ).reserveDocumentAdditions( 2 );
+        verifyNoMoreInteractions( indexWriter );
     }
 
     private final long nodeId = 1, nodeId2 = 2;

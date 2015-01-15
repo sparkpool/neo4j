@@ -39,7 +39,7 @@ public abstract class LuceneIndexPopulator implements IndexPopulator
     private final FailureStorage failureStorage;
     private final long indexId;
 
-    protected IndexWriter writer;
+    protected LuceneIndexWriter writer;
     private Directory directory;
 
     LuceneIndexPopulator(

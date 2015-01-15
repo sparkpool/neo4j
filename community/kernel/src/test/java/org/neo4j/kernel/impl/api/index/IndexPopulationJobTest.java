@@ -413,6 +413,11 @@ public class IndexPopulationJobTest
             return new IndexUpdater()
             {
                 @Override
+                public void validate( Iterable<NodePropertyUpdate> updates ) throws IOException
+                {
+                }
+
+                @Override
                 public void process( NodePropertyUpdate update ) throws IOException, IndexEntryConflictException
                 {
                     switch ( update.getUpdateMode() )
@@ -484,6 +489,11 @@ public class IndexPopulationJobTest
         {
             return new IndexUpdater()
             {
+                @Override
+                public void validate( Iterable<NodePropertyUpdate> updates ) throws IOException
+                {
+                }
+
                 @Override
                 public void process( NodePropertyUpdate update ) throws IOException, IndexEntryConflictException
                 {

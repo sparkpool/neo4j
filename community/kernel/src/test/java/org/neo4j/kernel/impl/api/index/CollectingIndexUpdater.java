@@ -19,6 +19,7 @@
  */
 package org.neo4j.kernel.impl.api.index;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.neo4j.kernel.api.index.IndexUpdater;
@@ -27,6 +28,11 @@ import org.neo4j.kernel.api.index.NodePropertyUpdate;
 public abstract class CollectingIndexUpdater implements IndexUpdater
 {
     protected final ArrayList<NodePropertyUpdate> updates = new ArrayList<>();
+
+    @Override
+    public void validate( Iterable<NodePropertyUpdate> updates ) throws IOException
+    {
+    }
 
     @Override
     public void process( NodePropertyUpdate update )

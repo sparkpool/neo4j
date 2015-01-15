@@ -70,7 +70,7 @@ class DeferredConstraintVerificationUniqueLuceneIndexPopulator extends LuceneInd
     public void create() throws IOException
     {
         super.create();
-        searcherManager = new SearcherManager( writer, true, new SearcherFactory() );
+        searcherManager = writer.createSearcherManager();
     }
 
     @Override
@@ -137,6 +137,11 @@ class DeferredConstraintVerificationUniqueLuceneIndexPopulator extends LuceneInd
         return new IndexUpdater()
         {
             List<Object> updatedPropertyValues = new ArrayList<>();
+
+            @Override
+            public void validate( Iterable<NodePropertyUpdate> updates ) throws IOException
+            {
+            }
 
             @Override
             public void process( NodePropertyUpdate update ) throws IOException, IndexEntryConflictException

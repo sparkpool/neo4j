@@ -48,6 +48,7 @@ import org.neo4j.kernel.api.labelscan.NodeLabelUpdateNodeIdComparator;
 import org.neo4j.kernel.api.properties.DefinedProperty;
 import org.neo4j.kernel.api.properties.Property;
 import org.neo4j.kernel.impl.api.KernelTransactionImplementation;
+import org.neo4j.kernel.impl.api.index.IndexUpdates;
 import org.neo4j.kernel.impl.api.index.IndexingService;
 import org.neo4j.kernel.impl.core.CacheAccessBackDoor;
 import org.neo4j.kernel.impl.core.Token;
@@ -266,6 +267,7 @@ public class NeoStoreTransaction extends XaTransaction
     private ArrayList<Command.LabelTokenCommand> labelTokenCommands;
     private ArrayList<Command.PropertyKeyTokenCommand> propertyKeyTokenCommands;
     private Command.NeoStoreCommand neoStoreCommand;
+    private LazyIndexUpdates indexUpdates;
 
     private boolean committed = false;
     private boolean prepared = false;
@@ -459,12 +461,27 @@ public class NeoStoreTransaction extends XaTransaction
                                                  + commands.size() + " instead";
         intercept( commands );
 
+        validateIndexUpdates();
+
         for ( Command command : commands )
         {
             addCommand( command );
         }
 
         integrityValidator.validateTransactionStartKnowledge( lastCommittedTxWhenTransactionStarted );
+    }
+
+    // todo: better name?
+    private void validateIndexUpdates()
+    {
+        if ( !nodeCommands.isEmpty() || !propCommands.isEmpty() )
+        {
+            indexUpdates = new LazyIndexUpdates(
+                    getNodeStore(), getPropertyStore(),
+                    groupedNodePropertyCommands( propCommands ), new HashMap<>( nodeCommands ) );
+
+            indexes.validate( indexUpdates );
+        }
     }
 
     protected void intercept( List<Command> commands )
@@ -755,10 +772,16 @@ public class NeoStoreTransaction extends XaTransaction
 
     private void applyCommit( boolean isRecovered )
     {
+        if ( isRecovered ) // no preparation of this tx happened - need to validate index updates now
+        {
+            validateIndexUpdates();
+        }
+
         try ( LockGroup lockGroup = new LockGroup() )
         {
             committed = true;
             CommandSorter sorter = new CommandSorter();
+
             // reltypes
             if ( relationshipTypeTokenCommands != null )
             {
@@ -814,11 +837,9 @@ public class NeoStoreTransaction extends XaTransaction
                 cacheAccess.applyLabelUpdates( labelUpdates );
             }
 
-            if ( !nodeCommands.isEmpty() || !propCommands.isEmpty() )
+            if ( indexUpdates != null )
             {
-                indexes.updateIndexes( new LazyIndexUpdates(
-                        getNodeStore(), getPropertyStore(),
-                        groupedNodePropertyCommands( propCommands ), new HashMap<>( nodeCommands ) ) );
+                indexes.updateIndexes( indexUpdates );
             }
 
             // schema rules. Execute these after generating the property updates so. If executed
@@ -871,7 +892,7 @@ public class NeoStoreTransaction extends XaTransaction
         }
     }
 
-    private Collection<List<PropertyCommand>> groupedNodePropertyCommands( Iterable<PropertyCommand> propCommands )
+    private Map<Long,List<PropertyCommand>> groupedNodePropertyCommands( Iterable<PropertyCommand> propCommands )
     {
         // A bit too expensive data structure, but don't know off the top of my head how to make it better.
         Map<Long, List<PropertyCommand>> groups = new HashMap<>();
@@ -891,7 +912,7 @@ public class NeoStoreTransaction extends XaTransaction
             }
             group.add( command );
         }
-        return groups.values();
+        return groups;
     }
 
     public void commitChangesToCache()
@@ -2400,6 +2421,16 @@ public class NeoStoreTransaction extends XaTransaction
             PropertyStore propertyStore, long nextProp, PropertyReceiver receiver )
     {
         Collection<PropertyRecord> chain = propertyStore.getPropertyRecordChain( nextProp );
+        if ( chain != null )
+        {
+            loadPropertyChain( chain, propertyStore, receiver );
+        }
+    }
+
+    static void loadProperties( PropertyStore propertyStore, long nextProp, PropertyReceiver receiver,
+            Map<Long,PropertyRecord> propertyLookup )
+    {
+        Collection<PropertyRecord> chain = propertyStore.getPropertyRecordChain( nextProp, propertyLookup );
         if ( chain != null )
         {
             loadPropertyChain( chain, propertyStore, receiver );

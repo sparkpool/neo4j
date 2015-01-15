@@ -22,6 +22,7 @@ package org.neo4j.kernel.impl.api.index;
 import java.io.IOException;
 
 import org.neo4j.kernel.api.index.IndexUpdater;
+import org.neo4j.kernel.api.index.NodePropertyUpdate;
 
 public abstract class DelegatingIndexUpdater implements IndexUpdater
 {
@@ -30,6 +31,12 @@ public abstract class DelegatingIndexUpdater implements IndexUpdater
     public DelegatingIndexUpdater( IndexUpdater delegate )
     {
         this.delegate = delegate;
+    }
+
+    @Override
+    public void validate( Iterable<NodePropertyUpdate> updates ) throws IOException
+    {
+        delegate.validate( updates );
     }
 
     @Override
