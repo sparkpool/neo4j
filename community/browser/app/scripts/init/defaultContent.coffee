@@ -1,5 +1,5 @@
 ###!
-Copyright (c) 2002-2014 "Neo Technology,"
+Copyright (c) 2002-2015 "Neo Technology,"
 Network Engine for Objects in Lund AB [http://neotechnology.com]
 
 This file is part of Neo4j.
@@ -104,7 +104,7 @@ CREATE (n) RETURN n
 //   'LabelName' with label of node to delete
 //   'propertyKey' with property to find
 //   'expected_value' with value of property
-START n=node(*) 
+START n=node(*)
 MATCH (n:LabelName)-[r?]-()
 WHERE n.propertyKey = "expected_value"
 DELETE n,r
@@ -221,7 +221,7 @@ RETURN DISTINCT head(labels(a)), type(r), head(labels(b)) LIMIT 100
 :GET /db/data/ext
         """
       }
-      
+
     ]
 
     folders = [

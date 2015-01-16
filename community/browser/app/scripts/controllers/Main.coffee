@@ -1,5 +1,5 @@
 ###!
-Copyright (c) 2002-2014 "Neo Technology,"
+Copyright (c) 2002-2015 "Neo Technology,"
 Network Engine for Objects in Lund AB [http://neotechnology.com]
 
 This file is part of Neo4j.
@@ -84,7 +84,7 @@ angular.module('neo4jApp.controllers')
     'Editor'
     ($scope, Editor) ->
       # everything should be assembled
-      # Editor.setContent(":play intro") 
+      # Editor.setContent(":play intro")
       # Editor.execScript(":play intro")
   ])
 
